@@ -1,0 +1,11 @@
+# Исключаем папку мобилки и ТЗ
+film-finder-mobile/
+*.docx
+*.doc
+
+# Стандартные системные файлы и кэш
+__pycache__/
+*.py[cod]
+.env
+node_modules/
+.DS_Store
