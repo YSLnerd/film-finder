@@ -13,7 +13,7 @@ import AdminUserEdit from './pages/AdminUserEdit';
 import AdminMovieNew from './pages/AdminMovieNew';
 import AdminPersonNew from './pages/AdminPersonNew';
 import AdminGenres from './pages/AdminGenres';
-import AdminEditList from './pages/AdminEditList';
+
 
 function App() {
   return (
@@ -45,7 +45,7 @@ function App() {
 
         {/* Админ: прочее */}
         <Route path="/admin/genres" element={<ProtectedRoute adminOnly><AdminGenres /></ProtectedRoute>} />
-        <Route path="/admin/edit-list" element={<ProtectedRoute adminOnly><AdminEditList /></ProtectedRoute>} />
+        
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

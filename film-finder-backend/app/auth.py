@@ -11,8 +11,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
 def hash_password(password: str) -> str:
-    # Бэкенд bcrypt требует байты
-    pwd_bytes = password.encode('utf-8')[:72]  # Обрезаем до 72 байт на всякий случай
+    pwd_bytes = password.encode('utf-8')[:72]
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(pwd_bytes, salt).decode('utf-8')
 

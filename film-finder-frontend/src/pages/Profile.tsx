@@ -118,7 +118,7 @@ export default function Profile() {
               <img
                 src={user.prof_pic_link}
                 alt={user.nickname}
-                className="w-full aspect-[2/3] object-cover rounded"
+                className="w-full aspect-[2/3] object-contain rounded bg-slate-700/30"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}

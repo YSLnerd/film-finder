@@ -12,17 +12,6 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 Base.metadata.create_all(bind=engine)
-from app.models import (
-    User,
-    Movie,
-    Genre,
-    Director,
-    Actor,
-    GenreMovie,
-    Directing,
-    Acting,
-    FavouriteMovie
-)
 def get_db():
     db = SessionLocal()
     try:
