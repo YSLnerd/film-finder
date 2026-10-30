@@ -74,6 +74,7 @@ mobile website/\
             ├── Search.tsx(Окно поиска)\
             └── Stats.tsx(Окно статистики)\
 Структура БД:\
-![alt text](image-1.png)
-Инструкция по запуску:
-docker compose --build -d
+![Логическая схема БД](./img1.png)\
+![Физическая схема БД](./img2.png)\
+Инструкция по запуску:\
+docker compose up --build -d
