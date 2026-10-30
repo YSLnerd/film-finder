@@ -6,7 +6,7 @@ from app.database import get_db
 from app.models import FavouriteMovie, Movie, Genre, GenreMovie
 from app.dependencies import get_current_user
 router = APIRouter(prefix="/stats", tags=["stats"])
-#Топ жанров для статистики
+#Топ жанров среди подобранных abkmvjd gjkmpjdfntktq
 @router.get("/popular-genres")
 def get_popular_genres(
     limit: int = Query(10, ge=1, le=50),

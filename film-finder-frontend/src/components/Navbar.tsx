@@ -5,12 +5,14 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Скрываем шапку на страницах авторизации и регистрации
   if (location.pathname === '/login' || location.pathname === '/register') {
     return null;
   }
 
   const admin = isAdmin();
 
+  // Вспомогательная функция для генерации ссылок меню
   const link = (to: string, label: string) => {
     const active = location.pathname === to;
     return (

@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+//задаём URL бекенда
 const api = axios.create({
   baseURL: 'http://localhost:8000',
 });

@@ -8,15 +8,15 @@ from app.models import (
     Movie, Genre, GenreMovie,
     Actor, Acting, Director, Directing
 )
-from app.schemas import MovieShort, MovieDetail, GenreResponse
+from app.schemas import MovieBase, MovieDetail, GenreResponse
 
 
 router = APIRouter(prefix="/movies", tags=["movies"])
-#Список жанров из БД
+#Возвращаем список жанров из БД
 @router.get("/genres", response_model=list[GenreResponse])
 def get_genres(db: Session = Depends(get_db)):
     return db.query(Genre).order_by(Genre.name_ru).all()
-#Список настроений из БД
+#Возвращаем список настроений из БД
 @router.get("/moods", response_model=list[str])
 def get_moods(db: Session = Depends(get_db)):
     moods = db.query(Movie.mood).distinct().order_by(Movie.mood).all()
@@ -69,25 +69,7 @@ def recommend_movie(
     if not movie:
         raise HTTPException(404, "Фильм по заданным параметрам не найден")
     return movie
-#Поиск фильма
-@router.get("/search", response_model=list[MovieShort])
-def search_movies(
-    query: str = Query(..., min_length=1),
-    limit: int = Query(30, ge=1, le=100),
-    db: Session = Depends(get_db)
-):
-    pattern = f"%{query}%"
-    return (
-        db.query(Movie)
-        .filter(
-            Movie.rus_title.ilike(pattern) |
-            Movie.orig_title.ilike(pattern) |
-            Movie.title.ilike(pattern)
-        )
-        .order_by(Movie.rus_title)
-        .limit(limit)
-        .all()
-    )
+
 #Поиск всех актёров фильма
 @router.get("/actors")
 def get_all_actors(db: Session = Depends(get_db)):
@@ -145,7 +127,7 @@ def get_actor(actor_id: int, db: Session = Depends(get_db)):
         "actor_country": actor.actor_country,
         "movies": [{"id_movie": m.id_movie, "rus_title": m.rus_title} for m in films],
     }
-#выодит список фильмов для актёра
+#выодит список фильмов для режиссёра
 @router.get("/directors/{director_id}")
 def get_director(director_id: int, db: Session = Depends(get_db)):
     director = db.query(Director).filter(Director.id_director == director_id).first()

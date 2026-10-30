@@ -43,17 +43,20 @@ export default function Home() {
   const handleFind = async () => {
     setError('');
     setMovie(null);
-
-    if (!genre || !mood || !rating) {
-      setError('Заполните жанр, настроение и возрастной рейтинг');
+    if (!genre || !length || !mood || !period || !rating) {
+      setError('Пожалуйста, заполните все 5 полей для поиска');
       return;
     }
 
     setLoading(true);
     try {
-      const params: any = { genre, mood, age_rating: rating };
-      if (length) params.duration = length;
-      if (period) params.year_period = period;
+      const params = { 
+        genre, 
+        mood, 
+        age_rating: rating,
+        duration: length,
+        year_period: period
+      };
 
       const res = await api.get('/movies/recommend', { params });
       setMovie(res.data);
@@ -85,7 +88,7 @@ export default function Home() {
               onChange={(e) => setGenre(e.target.value)}
               className="w-full p-3 border-2 border-gray-200 text-white rounded-lg bg-transparent focus:outline-none focus:border-indigo-700"
             >
-              <option value="" className="text-black">Выберите жанр</option>
+              <option value="" className="text-black">Выберите жанр *</option>
               {genres.map((g) => (
                 <option key={g.id_genre} value={g.name_ru} className="text-black">
                   {g.name_ru}
@@ -98,7 +101,7 @@ export default function Home() {
               onChange={(e) => setLength(e.target.value)}
               className="w-full p-3 border-2 border-gray-200 text-white rounded-lg bg-transparent focus:outline-none focus:border-indigo-700"
             >
-              <option value="" className="text-black">Выберите длительность</option>
+              <option value="" className="text-black">Выберите длительность *</option>
               <option value="0-90" className="text-black">До 90 минут</option>
               <option value="90-120" className="text-black">90-120 минут</option>
               <option value="120-150" className="text-black">120-150 минут</option>
@@ -110,7 +113,7 @@ export default function Home() {
               onChange={(e) => setMood(e.target.value)}
               className="w-full p-3 border-2 border-gray-200 text-white rounded-lg bg-transparent focus:outline-none focus:border-indigo-700"
             >
-              <option value="" className="text-black">Выберите настроение</option>
+              <option value="" className="text-black">Выберите настроение *</option>
               {moods.map((m) => (
                 <option key={m} value={m} className="text-black">{m}</option>
               ))}
@@ -121,7 +124,7 @@ export default function Home() {
               onChange={(e) => setPeriod(e.target.value)}
               className="w-full p-3 border-2 border-gray-200 text-white rounded-lg bg-transparent focus:outline-none focus:border-indigo-700"
             >
-              <option value="" className="text-black">Выберите период выхода</option>
+              <option value="" className="text-black">Выберите период выхода *</option>
               <option value="2020-2026" className="text-black">2020-2026</option>
               <option value="2010-2019" className="text-black">2010-2019</option>
               <option value="2000-2009" className="text-black">2000-2009</option>
@@ -133,7 +136,7 @@ export default function Home() {
               onChange={(e) => setRating(e.target.value)}
               className="w-full p-3 border-2 border-gray-200 text-white rounded-lg bg-transparent focus:outline-none focus:border-indigo-700"
             >
-              <option value="" className="text-black">Выберите возрастной рейтинг</option>
+              <option value="" className="text-black">Выберите возрастной рейтинг *</option>
               {ratings.map((r) => (
                 <option key={r} value={r} className="text-black">{r}</option>
               ))}

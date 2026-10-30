@@ -7,7 +7,7 @@ from app.schemas import UserRegister, UserLogin, Token, UserResponse
 from app.auth import hash_password, verify_password, create_access_token
 from app.dependencies import get_current_user
 router = APIRouter(prefix="/auth", tags=["auth"])
-#Проверяет корректность ссылки для обновления фото
+#Проверяет ссыли фото через кастомный валидатор
 class PhotoUpdate(BaseModel):
     prof_pic_link: str
     @field_validator('prof_pic_link')
@@ -21,9 +21,10 @@ class PhotoUpdate(BaseModel):
         if len(v) < 12:
             raise ValueError('Ссылка слишком короткая')
         return v
-#Регистрация
+#Роутер регистрации
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(user: UserRegister, db: Session = Depends(get_db)):
+    #Проверка на уже существующего пользователя с такими данными
     existing = db.query(User).filter(User.nickname == user.nickname).first()
     if existing:
         raise HTTPException(400, "Пользователь с таким никнеймом уже существует")
@@ -45,17 +46,24 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.nickname == user.nickname).first()
+    #Если не совпадают данные -401
     if not db_user:
         raise HTTPException(401, "Неверный логин или пароль")
+    #Если пароль захеширован В БД
     if db_user.password.startswith("$2b$"):
+    #Данные не совпадают -401
         if not verify_password(user.password, db_user.password):
             raise HTTPException(401, "Неверный логин или пароль")
     else:
+        #Если пароль в БД не захеширован
+        #Данные не совпадают -401
         if db_user.password != user.password:
             raise HTTPException(401, "Неверный логин или пароль")
+        #Данные совпадают-хешируем пароль в БД
         db_user.password = hash_password(user.password)
         db.commit()
         db.refresh(db_user)
+    #После всего этого выдаём токен
     token = create_access_token({"sub": str(db_user.id_user)})
     return {
         "access_token": token,
@@ -67,6 +75,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         },
     }
 #Текущий пользователь
+
 @router.get("/me", response_model=UserResponse)
 def get_me(
     current_user_id: int = Depends(get_current_user),
@@ -80,13 +89,14 @@ def get_me(
 @router.put("/me/photo")
 def update_photo(
     data: PhotoUpdate,
+    #Берём ID текущего пользователя
     current_user_id: int = Depends(get_current_user),
     db: Session = Depends(get_db)
-):
+): #Не находим пользователя выдаём ошибку
     user = db.query(User).filter(User.id_user == current_user_id).first()
     if not user:
         raise HTTPException(404, "Пользователь не найден")
-
+    #В ином случе меняем ссылку на фото
     user.prof_pic_link = data.prof_pic_link if data.prof_pic_link else None
     db.commit()
     db.refresh(user)

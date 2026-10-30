@@ -5,18 +5,18 @@ from app.database import get_db
 from app.models import (
     Movie, Director, Actor,
     GenreMovie, Directing, Acting,
-    User, FavouriteMovie
+    User, FavouriteMovie, Genre,GenreMovie
 )
 from app.schemas import (
-    MovieCreate, MovieUpdate, MovieShort,
+    MovieCreate, MovieUpdate, MovieBase,
     DirectorCreate, DirectorUpdate, DirectorResponse,
     ActorCreate, ActorUpdate, ActorResponse,
-    UserResponse, UserRoleUpdate
+    UserResponse, UserRoleUpdate, GenreCreate,GenreUpdate
 )
 from app.dependencies import require_admin
 router = APIRouter(prefix="/admin", tags=["admin"])
 # ФИЛЬМЫ (CRUD)
-@router.post("/movies", response_model=MovieShort, status_code=status.HTTP_201_CREATED)
+@router.post("/movies", response_model=MovieBase, status_code=status.HTTP_201_CREATED)
 #Создание фильма 
 def create_movie(
     data: MovieCreate,
@@ -36,7 +36,7 @@ def create_movie(
     db.refresh(movie)
     return movie
 #Обновление фильма
-@router.put("/movies/{movie_id}", response_model=MovieShort)
+@router.put("/movies/{movie_id}", response_model=MovieBase)
 def update_movie(
     movie_id: int,
     data: MovieUpdate,
@@ -160,14 +160,14 @@ def delete_actor(
     return {"message": "Актёр удалён", "id_actor": actor_id}
 
 # УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ
-#  Получение всех пользователей системы
+#  Получение всех пользователей системы(Нужно для нахождения пользователя)
 @router.get("/users", response_model=list[UserResponse])
 def get_all_users(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
     return db.query(User).order_by(User.id_user).all()
-#Поиск и изменение роли пользователя
+#Изменение роли пользователя
 @router.put("/users/{user_id}/role", response_model=UserResponse)
 def change_user_role(
     user_id: int,
@@ -213,13 +213,8 @@ def delete_user(
         "id_user": user_id,
         "nickname": user.nickname
     }
-from pydantic import BaseModel
-class GenreCreate(BaseModel):
-    name: str
-    name_ru: str
-class GenreUpdate(BaseModel):
-    name: str | None = None
-    name_ru: str | None = None
+
+
 #Добавление жанра
 @router.post("/genres", status_code=status.HTTP_201_CREATED)
 def create_genre(
@@ -227,7 +222,6 @@ def create_genre(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    from app.models import Genre
 
     existing = db.query(Genre).filter(
         (Genre.name == data.name) | (Genre.name_ru == data.name_ru)
@@ -254,7 +248,6 @@ def update_genre(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    from app.models import Genre
 
     genre = db.query(Genre).filter(Genre.id_genre == genre_id).first()
     if not genre:
@@ -281,8 +274,6 @@ def delete_genre(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    """Удалить жанр и связи с фильмами"""
-    from app.models import Genre, GenreMovie
 
     genre = db.query(Genre).filter(Genre.id_genre == genre_id).first()
     if not genre:
@@ -295,7 +286,7 @@ def delete_genre(
     return {"message": "Жанр удалён", "id_genre": genre_id}
 
 
-#Режиссёры фильм
+#Привязывает режиссёра к фильму
 @router.post("/movies/{movie_id}/directors/{director_id}")
 def attach_director(
     movie_id: int,
@@ -303,7 +294,6 @@ def attach_director(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    from app.models import Movie, Director, Directing
 
     movie = db.query(Movie).filter(Movie.id_movie == movie_id).first()
     if not movie:
@@ -329,7 +319,7 @@ def attach_director(
         "director_id": director_id
     }
 
-
+#Отвязывает режиссёра от фильма
 @router.delete("/movies/{movie_id}/directors/{director_id}")
 def detach_director(
     movie_id: int,
@@ -337,7 +327,6 @@ def detach_director(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    from app.models import Directing
 
     link = db.query(Directing).filter(
         Directing.id_movie == movie_id,
@@ -349,7 +338,7 @@ def detach_director(
     db.delete(link)
     db.commit()
     return {"message": "Режиссёр отвязан от фильма"}
-#актёры фильм
+#Привязывает актёра к фильму
 @router.post("/movies/{movie_id}/actors/{actor_id}")
 def attach_actor(
     movie_id: int,
@@ -357,7 +346,6 @@ def attach_actor(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    from app.models import Movie, Actor, Acting
 
     movie = db.query(Movie).filter(Movie.id_movie == movie_id).first()
     if not movie:
@@ -383,7 +371,7 @@ def attach_actor(
         "actor_id": actor_id
     }
 
-
+#Отвязавыет актёра от фильма
 @router.delete("/movies/{movie_id}/actors/{actor_id}")
 def detach_actor(
     movie_id: int,
@@ -391,7 +379,7 @@ def detach_actor(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    from app.models import Acting
+
 
     link = db.query(Acting).filter(
         Acting.id_movie == movie_id,
@@ -405,7 +393,7 @@ def detach_actor(
     return {"message": "Актёр отвязан от фильма"}
 
 
-#Жанры фильм
+#Привязывает жанр к фильму
 @router.post("/movies/{movie_id}/genres/{genre_id}")
 def attach_genre(
     movie_id: int,
@@ -413,7 +401,6 @@ def attach_genre(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    from app.models import Movie, Genre, GenreMovie
 
     movie = db.query(Movie).filter(Movie.id_movie == movie_id).first()
     if not movie:
@@ -439,7 +426,7 @@ def attach_genre(
         "genre_id": genre_id
     }
 
-
+#Отвязывает жанр от фильма
 @router.delete("/movies/{movie_id}/genres/{genre_id}")
 def detach_genre(
     movie_id: int,
@@ -447,7 +434,7 @@ def detach_genre(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    from app.models import GenreMovie
+  
 
     link = db.query(GenreMovie).filter(
         GenreMovie.id_movie == movie_id,

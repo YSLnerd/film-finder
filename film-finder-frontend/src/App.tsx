@@ -18,11 +18,15 @@ import AdminGenres from './pages/AdminGenres';
 function App() {
   return (
     <BrowserRouter>
+      {/* Постоянное отображение навигационной панели */}
       <Navbar />
+      
       <Routes>
+        {/* Публичные маршруты (доступны всем) */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        {/* Защищённые маршруты (требуют авторизации) */}
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
         <Route path="/movies/:id" element={<ProtectedRoute><MovieDetail /></ProtectedRoute>} />
@@ -30,23 +34,17 @@ function App() {
         <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-        {/* Админ: пользователи */}
+        {/* Административные маршруты (требуют права администратора) */}
         <Route path="/admin/users/:id" element={<ProtectedRoute adminOnly><AdminUserEdit /></ProtectedRoute>} />
-
-        {/* Админ: фильмы */}
         <Route path="/admin/movies/new" element={<ProtectedRoute adminOnly><AdminMovieNew /></ProtectedRoute>} />
         <Route path="/admin/movies/:id/edit" element={<ProtectedRoute adminOnly><AdminMovieNew /></ProtectedRoute>} />
-
-        {/* Админ: люди (актёры и режиссёры) */}
         <Route path="/admin/directors/new" element={<ProtectedRoute adminOnly><AdminPersonNew /></ProtectedRoute>} />
         <Route path="/admin/actors/new" element={<ProtectedRoute adminOnly><AdminPersonNew /></ProtectedRoute>} />
         <Route path="/admin/directors/:id/edit" element={<ProtectedRoute adminOnly><AdminPersonNew /></ProtectedRoute>} />
         <Route path="/admin/actors/:id/edit" element={<ProtectedRoute adminOnly><AdminPersonNew /></ProtectedRoute>} />
-
-        {/* Админ: прочее */}
         <Route path="/admin/genres" element={<ProtectedRoute adminOnly><AdminGenres /></ProtectedRoute>} />
-        
 
+        {/* Перенаправление для всех несуществующих путей */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
