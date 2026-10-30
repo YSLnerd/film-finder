@@ -9,5 +9,3 @@ __pycache__/
 .env
 node_modules/
 .DS_Store
-img1.png
-img2.png
