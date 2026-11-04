@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { isAdmin } from '../hooks/useUser';
-
+import { isAdmin } from '../utils/useUser';
+// Описываем структуры данных, приходящих с бекенда
 interface Genre { id_genre: number; name_ru: string; }
 interface Director { id_director: number; first_name: string; second_name: string | null; }
 interface Actor { id_actor: number; first_name: string; second_name: string; }
@@ -22,12 +22,13 @@ interface MovieDetail {
 }
 
 export default function MovieDetail() {
+  //берём данные из адресной строки
   const { id } = useParams();
   const navigate = useNavigate();
   const [movie, setMovie] = useState<MovieDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const admin = isAdmin();
-
+  //В случае смены ID берём новые данные с бекенда
   useEffect(() => {
     if (!id) return;
     api.get(`/movies/${id}`)
@@ -35,7 +36,7 @@ export default function MovieDetail() {
       .catch(() => setMovie(null))
       .finally(() => setLoading(false));
   }, [id]);
-
+  //Функция удаления фильма
   const handleDelete = async () => {
     if (!window.confirm('Удалить фильм?')) return;
     try {
@@ -45,18 +46,21 @@ export default function MovieDetail() {
       alert(err.response?.data?.detail || 'Ошибка удаления');
     }
   };
-
+  //Пока данные грузятся, выводится черный экран с надписью
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black"><p className="text-white">Загрузка...</p></div>;
+  //Если фильм с таким ID не нашелся (или сервер вернул ошибку), выводится текст
   if (!movie) return <div className="min-h-screen flex items-center justify-center bg-black"><p className="text-white">Фильм не найден</p></div>;
 
   return (
     <div
+      //Внешний фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center p-6"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      {/* Кнопка Назад */}
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-full max-w-6xl">
         <button onClick={() => navigate(-1)} className="text-white hover:text-indigo-300 mb-4">← Назад</button>
-
+        {/* Колонка постера */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-4">
             {movie.poster_url ? (
@@ -65,7 +69,7 @@ export default function MovieDetail() {
               <div className="w-full aspect-[2/3] bg-slate-700 rounded flex items-center justify-center text-gray-400">Нет постера</div>
             )}
           </div>
-
+          {/* Данные фильма */}
           <div className="lg:col-span-2 bg-slate-600/50 border-2 border-gray-200 rounded-lg p-6 space-y-3">
             <h1 className="text-2xl font-bold text-white mb-4">{movie.rus_title}</h1>
             {[
@@ -81,7 +85,7 @@ export default function MovieDetail() {
               </div>
             ))}
           </div>
-
+          {/* Режиссёры */}
           <div className="space-y-4">
             <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-4">
               <h3 className="font-semibold text-white mb-2">Режиссёры</h3>
@@ -99,7 +103,7 @@ export default function MovieDetail() {
                 </ul>
               )}
             </div>
-
+            {/* Актёры */}
             <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-4">
               <h3 className="font-semibold text-white mb-2">Актёры</h3>
               {movie.actors.length === 0 ? <p className="text-sm text-gray-400">Нет данных</p> : (
@@ -116,7 +120,7 @@ export default function MovieDetail() {
                 </ul>
               )}
             </div>
-
+            {/* Жанры */}
             <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-4">
               <h3 className="font-semibold text-white mb-2">Жанры</h3>
               <div className="flex flex-wrap gap-2">
@@ -127,7 +131,7 @@ export default function MovieDetail() {
             </div>
           </div>
         </div>
-
+        {/* Кнопки Удалить или Изменить для админа */}
         {admin && (
           <div className="mt-6 flex gap-3">
             <button

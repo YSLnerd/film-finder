@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-
+// Описываем структуры данных, приходящих с бекенда
 interface Form {
   title: string;
   orig_title: string;
@@ -33,8 +33,9 @@ interface Genre {
 export default function AdminMovieNew() {
   const { id } = useParams();
   const navigate = useNavigate();
+  // Определяем, режим редактирования или создания
   const isEdit = !!id;
-
+  //Храним ключевые характеристики фильма
   const [form, setForm] = useState<Form>({
     title: '',
     orig_title: '',
@@ -45,28 +46,28 @@ export default function AdminMovieNew() {
     mood: '',
     poster_url: '',
   });
-
+  //Храним элементы массивов
   const [directors, setDirectors] = useState<Director[]>([]);
   const [actors, setActors] = useState<Actor[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
   const [ratings, setRatings] = useState<string[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
-
   // Связи текущего фильма
   const [linkedDirectors, setLinkedDirectors] = useState<number[]>([]);
   const [linkedActors, setLinkedActors] = useState<number[]>([]);
   const [linkedGenres, setLinkedGenres] = useState<number[]>([]);
-
-  // Выбор для добавления
+  // Храним выбранные для добавления данные
   const [selDirector, setSelDirector] = useState<number | ''>('');
   const [selActor, setSelActor] = useState<number | ''>('');
   const [selGenre, setSelGenre] = useState<number | ''>('');
-
+  //Управляет показом экрана загрузки, пока с бэкенда подтягиваются справочники или данные редактируемого фильма
   const [loading, setLoading] = useState(true);
+  //Блокирует кнопку отправки формы во время выполнения запроса на сервер, защищая от повторных случайных кликов
   const [saving, setSaving] = useState(false);
+  //Хранит текст ошибки
   const [error, setError] = useState('');
+  //Хранит тест об успешном сохранении
   const [success, setSuccess] = useState('');
-
   // Загрузка справочников
   useEffect(() => {
     const loadAll = async () => {
@@ -89,14 +90,12 @@ export default function AdminMovieNew() {
     };
     loadAll();
   }, []);
-
   // Если редактируем — загружаем фильм
   useEffect(() => {
     if (!isEdit || !id) {
       setLoading(false);
       return;
     }
-
     api
       .get(`/movies/${id}`)
       .then((res) => {
@@ -118,46 +117,48 @@ export default function AdminMovieNew() {
       .catch(() => setError('Не удалось загрузить фильм'))
       .finally(() => setLoading(false));
   }, [id, isEdit]);
-
+  //Универсальное обновление полей формы
   const handleChange = (field: keyof Form, value: any) => {
     setForm({ ...form, [field]: value });
   };
-
+  //Добавление режиссёра
   const addDirector = () => {
     if (selDirector === '') return;
     if (linkedDirectors.includes(selDirector)) return;
     setLinkedDirectors([...linkedDirectors, selDirector]);
     setSelDirector('');
   };
+  //Удаление режиссёра
   const removeDirector = (did: number) => {
     setLinkedDirectors(linkedDirectors.filter((x) => x !== did));
   };
-
+  //Добавление актёра
   const addActor = () => {
     if (selActor === '') return;
     if (linkedActors.includes(selActor)) return;
     setLinkedActors([...linkedActors, selActor]);
     setSelActor('');
   };
+  //Удаление актёра
   const removeActor = (aid: number) => {
     setLinkedActors(linkedActors.filter((x) => x !== aid));
   };
-
+  //Добавление жанра
   const addGenre = () => {
     if (selGenre === '') return;
-    if (linkedGenres.includes(selGenre)) return;
-    setLinkedGenres([...linkedGenres, selGenre]);
+    if (linkedGenres.includes(selGenre));
     setSelGenre('');
   };
+  //Удаление жанра
   const removeGenre = (gid: number) => {
     setLinkedGenres(linkedGenres.filter((x) => x !== gid));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    //отключаем перезагрузку страницы при отправке
     setError('');
     setSuccess('');
-
+    //Проверяем обязательные поля
     if (!form.title.trim() || !form.orig_title.trim() || !form.rus_title.trim()) {
       setError('Заполните все три названия');
       return;
@@ -174,9 +175,10 @@ export default function AdminMovieNew() {
       setError('Выберите рейтинг и настроение');
       return;
     }
-
+    //Ставим флаг в состояние тру
     setSaving(true);
     try {
+      //Готовим данные
       const payload = {
         title: form.title.trim(),
         orig_title: form.orig_title.trim(),
@@ -187,34 +189,32 @@ export default function AdminMovieNew() {
         mood: form.mood,
         poster_url: form.poster_url.trim() || null,
       };
-
+      //Универсальный контейнер для хранения ID фильма
       let movieId: number;
-
+      //Если есть айдишник, то выполняем запрос на изменение
       if (isEdit && id) {
         await api.put(`/admin/movies/${id}`, payload);
         movieId = Number(id);
         setSuccess('Изменения сохранены');
       } else {
+        //В ином случае выполняем запрос на создание
         const res = await api.post('/admin/movies', payload);
         movieId = res.data.id_movie;
         setSuccess(`Фильм создан #${movieId}`);
       }
-
       // Привязка режиссёров
       for (const did of linkedDirectors) {
         try { await api.post(`/admin/movies/${movieId}/directors/${did}`); } catch {}
       }
-
       // Привязка актёров
       for (const aid of linkedActors) {
         try { await api.post(`/admin/movies/${movieId}/actors/${aid}`); } catch {}
       }
-
       // Привязка жанров
       for (const gid of linkedGenres) {
         try { await api.post(`/admin/movies/${movieId}/genres/${gid}`); } catch {}
       }
-
+      //Делаем чуть паузу, чтоб пользователь видел сообщение с результатом, и уже потом перенаправляем на страницу фильма
       setTimeout(() => navigate(`/movies/${movieId}`), 800);
     } catch (err: any) {
       const detail = err.response?.data?.detail;
@@ -227,7 +227,7 @@ export default function AdminMovieNew() {
       setSaving(false);
     }
   };
-
+  //Если идёт загрузка, показываем окно заглушки
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -238,18 +238,20 @@ export default function AdminMovieNew() {
 
   return (
     <div
+      //Фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center p-6"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      {/* Кнопка Назад */}
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-full max-w-6xl">
         <button onClick={() => navigate(-1)} className="text-white hover:text-indigo-300 mb-4">
           ← Назад
         </button>
-
+        {/* Надпись изменения или добавления фильма */}
         <h1 className="text-3xl font-bold mb-6 text-center text-white">
           {isEdit ? 'Изменить фильм' : 'Добавить фильм'}
         </h1>
-
+        {/* Табличка Надписи при сохранении */}
         {error && (
           <div className="bg-red-500 text-white p-2 rounded mb-3 text-center text-sm">{error}</div>
         )}
@@ -272,7 +274,7 @@ export default function AdminMovieNew() {
                 Нет постера
               </div>
             )}
-
+            {/* Строка ссылки на фото */}
             <input
               type="text"
               placeholder="Ссылка на постер"
@@ -282,7 +284,7 @@ export default function AdminMovieNew() {
             />
           </div>
 
-          {/* Данные */}
+          {/* Данные фильма верхняя строка */}
           <div className="lg:col-span-3 bg-slate-600/50 border-2 border-gray-200 rounded-lg p-6 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
@@ -301,7 +303,7 @@ export default function AdminMovieNew() {
                   className="w-full p-2 border-2 border-gray-200 text-white rounded-lg bg-transparent focus:outline-none focus:border-indigo-700" required />
               </div>
             </div>
-
+            {/* Данные фильма нижняя строка */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div>
                 <label className="block text-sm text-gray-200 mb-1">Дата выхода *</label>
@@ -331,7 +333,7 @@ export default function AdminMovieNew() {
               </div>
             </div>
 
-            {/* ЖАНРЫ */}
+            {/* жанры */}
             <div className="border-t border-gray-300 pt-3">
               <h3 className="text-white font-semibold mb-2">Жанры</h3>
               <div className="flex gap-2 mb-2">
@@ -361,7 +363,7 @@ export default function AdminMovieNew() {
               )}
             </div>
 
-            {/* РЕЖИССЁРЫ */}
+            {/* режиссёры */}
             <div className="border-t border-gray-300 pt-3">
               <h3 className="text-white font-semibold mb-2">Режиссёры</h3>
               <div className="flex gap-2 mb-2">
@@ -391,7 +393,7 @@ export default function AdminMovieNew() {
               )}
             </div>
 
-            {/* АКТЁРЫ */}
+            {/* актёры */}
             <div className="border-t border-gray-300 pt-3">
               <h3 className="text-white font-semibold mb-2">Актёры</h3>
               <div className="flex gap-2 mb-2">
@@ -420,7 +422,7 @@ export default function AdminMovieNew() {
                 </ul>
               )}
             </div>
-
+            {/* Кнопка сохранения */}
             <button type="submit" disabled={saving}
               className="w-full bg-indigo-700 text-white p-3 rounded-lg hover:bg-indigo-800 font-semibold disabled:bg-gray-500 mt-2">
               {saving ? 'Сохранение...' : isEdit ? 'Сохранить' : 'Добавить фильм'}

@@ -8,7 +8,9 @@ interface GenreStat {
 
 export default function Stats() {
   const [stats, setStats] = useState<GenreStat[]>([]);
+  //Статус загрузки
   const [loading, setLoading] = useState(false);
+  //статус того, что пользователь запросил запрос
   const [shown, setShown] = useState(false);
 
   const handleShow = async () => {
@@ -23,20 +25,23 @@ export default function Stats() {
       setLoading(false);
     }
   };
-
+//Находим максимальное число элементов для диаграммы
   const maxCount = stats.length > 0 ? stats[0].count : 1;
+  //Находим общее число элементов
   const total = stats.reduce((sum, s) => sum + s.count, 0);
 
   return (
     <div
+    //Фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center p-6"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      {/*серый квадрат */}
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-full max-w-4xl">
         <h1 className="text-3xl font-bold mb-6 text-center text-white">
           Статистика
         </h1>
-
+          {/*кнопка сформировать */}
         <button
           onClick={handleShow}
           disabled={loading}
@@ -44,7 +49,7 @@ export default function Stats() {
         >
           {loading ? 'Загрузка...' : 'Сформировать'}
         </button>
-
+        {/*Блок вывода данных */}
         <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-6 min-h-[300px]">
           <h2 className="text-xl font-bold mb-4 text-white">
             Любимые жанры
@@ -61,7 +66,7 @@ export default function Stats() {
               Нет данных для отображения
             </p>
           )}
-
+          {/*Гистограмма */}
           {shown && stats.length > 0 && (
             <div className="space-y-4">
               {stats.map((s, idx) => (

@@ -4,19 +4,24 @@ import api from '../api/client';
 
 export default function Login() {
   const navigate = useNavigate();
+  //храним логин пароль и текст ошибки
   const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
+      //Отправляем запрос на бек
       const res = await api.post('/auth/login', { nickname, password });
+      //Если он успешен, сохраняем токен,логин и парольв память браузера
       localStorage.setItem('token', res.data.access_token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
+      //Перенаправляем на главную страницу
       navigate('/');
+      //Если нет, выдаём ошибку
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Ошибка входа');
     }
@@ -24,19 +29,22 @@ export default function Login() {
 
   return (
     <div
+      //Внешний фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-96">
-        <h1 className="text-3xl font-bold mb-2 text-center text-white">Film Finder</h1>
+        
+        <h1 className="text-3xl font-bold mb-2 text-center text-white">Film Finder</h1>{/*Серый блок, название*/}
         <p className="text-center text-white mb-6">Система подбора фильмов</p>
-
+        {/*элемент ошибки*/}
         {error && (
           <div className="bg-red-500 text-white p-2 rounded mb-3 text-center text-sm">
             {error}
           </div>
         )}
-
+        {/*Строка ввода никнейма*/}
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -46,6 +54,7 @@ export default function Login() {
             className="w-full p-3 border-2 border-gray-200 text-white placeholder-gray-300 rounded-lg mb-3 focus:outline-none focus:border-indigo-700"
             required
           />
+          {/*строка ввода пароля*/}
           <input
             type="password"
             placeholder="Введите пароль"
@@ -58,10 +67,11 @@ export default function Login() {
             type="submit"
             className="w-full bg-indigo-700 text-white p-3 rounded-lg hover:bg-indigo-800 font-semibold"
           >
+            {/*Кнопка Войти*/}
             Войти
           </button>
         </form>
-
+        {/*Кнопка зарегистрироваться*/}
         <p className="text-center text-sm text-white mt-4">
           Нет аккаунта?{' '}
           <Link to="/register" className="text-indigo-700 hover:underline">

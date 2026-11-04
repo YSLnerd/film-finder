@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { isAdmin } from '../hooks/useUser';
-
+import { isAdmin } from '../utils/useUser';
+// Описываем структуры данных, приходящих с бекенда
 interface Movie { id_movie: number; rus_title: string; }
 interface Person {
   id_actor?: number;
@@ -22,23 +22,26 @@ export default function PersonDetail() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
+  //состояние для хранения объекта персоны
   const [person, setPerson] = useState<Person | null>(null);
+  //Состояние фиксирующее тип персоны
   const [type, setType] = useState<'actor' | 'director' | null>(null);
+  //булево состояние загрузки, управляющее отображением экрана загрузки
   const [loading, setLoading] = useState(true);
   const admin = isAdmin();
-
+  //В случае смены ID берём новые данные с бекенда
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-
+    //Юерём тип персоны
     const typeParam = searchParams.get('type');
-
+    //Если тип - актёр, то отправляем запрос на бекенд с id актёра
     if (typeParam === 'actor') {
       api.get(`/movies/actors/${id}`)
         .then((res) => { setPerson(res.data); setType('actor'); })
         .catch(() => setPerson(null))
         .finally(() => setLoading(false));
+    //В ином случае режиссёра
     } else if (typeParam === 'director') {
       api.get(`/movies/directors/${id}`)
         .then((res) => { setPerson(res.data); setType('director'); })
@@ -49,6 +52,7 @@ export default function PersonDetail() {
       api.get(`/movies/actors/${id}`)
         .then((res) => { setPerson(res.data); setType('actor'); })
         .catch(() =>
+          //Потом режиссёра
           api.get(`/movies/directors/${id}`)
             .then((res) => { setPerson(res.data); setType('director'); })
             .catch(() => setPerson(null))
@@ -56,7 +60,7 @@ export default function PersonDetail() {
         .finally(() => setLoading(false));
     }
   }, [id, searchParams]);
-
+  //Функция удаления человека
   const handleDelete = async () => {
     if (!window.confirm('Удалить?')) return;
     const url = type === 'actor' ? `/admin/actors/${id}` : `/admin/directors/${id}`;
@@ -67,8 +71,9 @@ export default function PersonDetail() {
       alert(err.response?.data?.detail || 'Ошибка удаления');
     }
   };
-
+    //Пока данные грузятся, выводится черный экран с надписью
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black"><p className="text-white">Загрузка...</p></div>;
+  //Если человек с таким ID не нашелся (или сервер вернул ошибку), выводится текст
   if (!person) return <div className="min-h-screen flex items-center justify-center bg-black"><p className="text-white">Человек не найден</p></div>;
 
   const photo = type === 'actor' ? person.actor_photo : person.director_photo;
@@ -76,17 +81,20 @@ export default function PersonDetail() {
 
   return (
     <div
+      //Фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center p-6"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      {/* Кнопка Назад */}
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-full max-w-6xl">
         <button onClick={() => navigate(-1)} className="text-white hover:text-indigo-300 mb-4">← Назад</button>
-
+        {/* Заголовок */}
         <h1 className="text-2xl font-bold text-white mb-6">
           {type === 'actor' ? 'Актёр' : 'Режиссёр'}
         </h1>
-
+        {/* Колонки */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Колонка фото */}
           <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-4">
             {photo ? (
               <img src={photo} alt={person.first_name} className="w-full aspect-[2/3] object-contain rounded bg-slate-700/30" />
@@ -94,7 +102,7 @@ export default function PersonDetail() {
               <div className="w-full aspect-[2/3] bg-slate-700 rounded flex items-center justify-center text-gray-400">Нет фото</div>
             )}
           </div>
-
+          {/* Основная информация */}
           <div className="lg:col-span-2 bg-slate-600/50 border-2 border-gray-200 rounded-lg p-6 space-y-3">
             <h2 className="text-xl font-bold text-white mb-4">
               {person.first_name} {person.second_name || ''}
@@ -110,7 +118,7 @@ export default function PersonDetail() {
               </div>
             ))}
           </div>
-
+          {/* Фильмография */}
           <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-4">
             <h3 className="font-semibold text-white mb-2">Фильмы ({person.movies.length})</h3>
             {person.movies.length === 0 ? <p className="text-sm text-gray-400">Нет данных</p> : (
@@ -128,7 +136,7 @@ export default function PersonDetail() {
             )}
           </div>
         </div>
-
+        {/* Кнопки админа */}
         {admin && (
           <div className="mt-6 flex gap-3">
             <button

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-
+// Описываем структуры данных, приходящих с бекенда
 interface User {
   id_user: number;
   nickname: string;
@@ -17,7 +17,7 @@ export default function AdminUserEdit() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
+  //берём с бекенда запрос на поиск пользователя при переходе на страницу
   useEffect(() => {
     if (!id) return;
     api
@@ -34,7 +34,7 @@ export default function AdminUserEdit() {
       .catch(() => setError('Ошибка загрузки'))
       .finally(() => setLoading(false));
   }, [id]);
-
+  //Сохранение роли
   const handleSaveRole = async () => {
     setError('');
     setSuccess('');
@@ -46,7 +46,7 @@ export default function AdminUserEdit() {
       setError(err.response?.data?.detail || 'Ошибка сохранения');
     }
   };
-
+  //Удаление пользователя
   const handleDelete = async () => {
     if (!window.confirm('Удалить пользователя?')) return;
     try {
@@ -56,7 +56,7 @@ export default function AdminUserEdit() {
       setError(err.response?.data?.detail || 'Ошибка удаления');
     }
   };
-
+  //заглушка окна при загрузке
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -64,7 +64,7 @@ export default function AdminUserEdit() {
       </div>
     );
   }
-
+  //Окно в том случае если пользователь не найден
   if (!user) {
     return (
       <div
@@ -88,9 +88,11 @@ export default function AdminUserEdit() {
 
   return (
     <div
+      //фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center p-6"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      {/* кнопка назад*/}
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-full max-w-2xl">
         <button
           onClick={() => navigate(-1)}
@@ -98,11 +100,11 @@ export default function AdminUserEdit() {
         >
           ← Назад
         </button>
-
+        {/* Заголовок*/}
         <h1 className="text-3xl font-bold mb-6 text-center text-white">
           Блокировка пользователя
         </h1>
-
+        {/* Табличка результата*/}
         {error && (
           <div className="bg-red-500 text-white p-2 rounded mb-3 text-center text-sm">
             {error}
@@ -113,7 +115,7 @@ export default function AdminUserEdit() {
             {success}
           </div>
         )}
-
+        {/* Никнейм*/}
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-gray-200 mb-1">Никнейм</label>
@@ -124,7 +126,7 @@ export default function AdminUserEdit() {
               className="w-full p-3 border-2 border-gray-200 text-white rounded-lg bg-transparent"
             />
           </div>
-
+          {/* Роль*/}
           <div>
             <label className="block text-sm text-gray-200 mb-1">Роль</label>
             <select
@@ -136,7 +138,7 @@ export default function AdminUserEdit() {
               <option value="admin" className="text-black">admin</option>
             </select>
           </div>
-
+          {/* Кнопки*/}
           <button
             onClick={handleSaveRole}
             className="w-full bg-indigo-700 text-white p-3 rounded-lg hover:bg-indigo-800 font-semibold"

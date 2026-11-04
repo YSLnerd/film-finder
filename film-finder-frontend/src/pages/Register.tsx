@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-
+//Храним пароль и ошибку
 export default function Register() {
   const navigate = useNavigate();
   const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
   const [error, setError] = useState('');
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
+    //Проверяем, что пароли совпадают
     if (password !== password2) {
       setError('Пароли не совпадают');
       return;
     }
-
+    //отправляем запрос на бекенд
     try {
       await api.post('/auth/register', { nickname, password });
       navigate('/login');
@@ -28,19 +28,21 @@ export default function Register() {
 
   return (
     <div
+      //Внешний фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      {/*Серый блок */}
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-96">
         <h1 className="text-3xl font-bold mb-2 text-center text-white">Регистрация</h1>
         <p className="text-center text-white mb-6">Создайте аккаунт</p>
-
+        {/*Блок ошибки */}
         {error && (
           <div className="bg-red-500 text-white p-2 rounded mb-3 text-center text-sm">
             {error}
           </div>
         )}
-
+        {/*Строки ввода */}
         <form onSubmit={handleSubmit}>
           <input
             type="text"

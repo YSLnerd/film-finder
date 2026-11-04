@@ -20,20 +20,23 @@ interface Movie {
 export default function Home() {
   const navigate = useNavigate();
 
+// Данные для выпадающих списков, которые подгружаются с сервера
   const [genres, setGenres] = useState<Genre[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
   const [ratings, setRatings] = useState<string[]>([]);
 
+  // Выбранные пользователем параметры фильтров
   const [genre, setGenre] = useState('');
   const [length, setLength] = useState('');
   const [mood, setMood] = useState('');
   const [period, setPeriod] = useState('');
   const [rating, setRating] = useState('');
 
+  // Состояние для подобранного фильма, ошибок и загрузки
   const [movie, setMovie] = useState<Movie | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+//Запросы к бекенду на получение жанра, рейтинга, настроения
   useEffect(() => {
     api.get('/movies/genres').then((res) => setGenres(res.data));
     api.get('/movies/moods').then((res) => setMoods(res.data));
@@ -41,8 +44,10 @@ export default function Home() {
   }, []);
 
   const handleFind = async () => {
+    //Сбрасываем старые данные
     setError('');
     setMovie(null);
+    //Проверяем заполнение
     if (!genre || !length || !mood || !period || !rating) {
       setError('Пожалуйста, заполните все 5 полей для поиска');
       return;
@@ -57,7 +62,7 @@ export default function Home() {
         duration: length,
         year_period: period
       };
-
+      //Отправляем запрос
       const res = await api.get('/movies/recommend', { params });
       setMovie(res.data);
 

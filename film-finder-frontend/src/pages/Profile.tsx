@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { isAdmin } from '../hooks/useUser';
-
+import { isAdmin } from '../utils/useUser';
+// Описываем структуры данных, приходящих с бекенда
 interface User {
   id_user: number;
   nickname: string;
@@ -84,7 +84,7 @@ export default function Profile() {
       setSearchError(err.response?.data?.detail || 'Ошибка поиска');
     }
   };
-
+  //заглушка окна при загрузке
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -92,7 +92,7 @@ export default function Profile() {
       </div>
     );
   }
-
+  //Если не удалось найти данные текущего пользователя, ставим заглушку
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -103,16 +103,18 @@ export default function Profile() {
 
   return (
     <div
+      //Фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center p-6"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      {/* Карточка */}
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-full max-w-6xl">
         <h1 className="text-3xl font-bold mb-6 text-center text-white">
           Профиль
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Фото + ссылка */}
+          {/* Фото*/}
           <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-4 space-y-3">
             {user.prof_pic_link ? (
               <img
@@ -128,7 +130,7 @@ export default function Profile() {
                 Нет фото
               </div>
             )}
-
+            {/* Строка ссылки на фото */}
             <input
               type="text"
               placeholder="Вставьте ссылку на фото"
@@ -136,7 +138,7 @@ export default function Profile() {
               onChange={(e) => setPhotoUrl(e.target.value)}
               className="w-full p-2 border-2 border-gray-200 text-white placeholder-gray-300 rounded-lg text-sm focus:outline-none focus:border-indigo-700 bg-transparent"
             />
-
+            {/* Табличка результата сохранения */}
             {error && (
               <div className="bg-red-500 text-white p-2 rounded text-center text-xs">
                 {error}
@@ -147,7 +149,7 @@ export default function Profile() {
                 {success}
               </div>
             )}
-
+            {/* Кнопка сохранения фото */}
             <button
               onClick={handleSavePhoto}
               disabled={saving}
@@ -209,7 +211,7 @@ export default function Profile() {
               {/* Поиск пользователя */}
               <div className="border-t border-gray-300 pt-3 mt-3">
                 <p className="text-xs text-gray-200 mb-2">Поиск пользователя</p>
-
+                {/* Строка ввода никнейма */}
                 <input
                   type="text"
                   placeholder="Введите никнейм"
@@ -218,14 +220,14 @@ export default function Profile() {
                   onKeyDown={(e) => e.key === 'Enter' && handleSearchUser()}
                   className="w-full p-2 border-2 border-gray-200 text-white placeholder-gray-300 rounded-lg mb-2 text-sm focus:outline-none focus:border-indigo-700 bg-transparent"
                 />
-
+                {/* кнопка ввода никнейма */}
                 <button
                   onClick={handleSearchUser}
                   className="block w-full text-center bg-indigo-700 text-white p-2 rounded-lg hover:bg-indigo-800 font-semibold text-sm"
                 >
                   Найти пользователя
                 </button>
-
+                {/* Табличка с ошибкой поиска */}
                 {searchError && (
                   <div className="bg-red-500 text-white p-1 rounded text-center text-xs mt-2">
                     {searchError}

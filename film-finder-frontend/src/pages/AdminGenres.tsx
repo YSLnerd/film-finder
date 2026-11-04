@@ -63,7 +63,7 @@ export default function AdminGenres() {
     }
   };
 
-  // Начать редактирование
+  // Редактирование
   const startEdit = (genre: Genre) => {
     setEditing(genre);
     setEditName(genre.name);
@@ -72,7 +72,7 @@ export default function AdminGenres() {
     setSuccess('');
   };
 
-  // Сохранить редактирование
+  // Сохранение
   const handleSaveEdit = async () => {
     if (!editing) return;
     setError('');
@@ -96,7 +96,7 @@ export default function AdminGenres() {
     }
   };
 
-  // Удалить жанр
+  // Удаление
   const handleDelete = async (id: number) => {
     if (!window.confirm('Удалить жанр? Это также удалит связи с фильмами.')) return;
     setError('');
@@ -110,7 +110,7 @@ export default function AdminGenres() {
       setError(err.response?.data?.detail || 'Ошибка удаления');
     }
   };
-
+  //Заглушка окна удаления
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -121,21 +121,23 @@ export default function AdminGenres() {
 
   return (
     <div
+      Фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center p-6"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-full max-w-6xl">
+        {/* кнопка назад*/}
         <button
           onClick={() => navigate(-1)}
           className="text-white hover:text-indigo-300 mb-4"
         >
           ← Назад
         </button>
-
+        {/* Заголовок */}
         <h1 className="text-3xl font-bold mb-6 text-center text-white">
           Жанры
         </h1>
-
+        {/* таблички результата */}
         {error && (
           <div className="bg-red-500 text-white p-2 rounded mb-3 text-center text-sm">
             {error}

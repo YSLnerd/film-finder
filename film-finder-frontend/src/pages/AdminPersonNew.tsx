@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-
+// Описываем структуры данных, приходящих с бекенда
 interface Form {
   first_name: string;
   second_name: string;
@@ -10,21 +10,22 @@ interface Form {
   country: string;
   photo: string;
 }
-
 export default function AdminPersonNew() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-
   // Определяем тип по URL
   const isDirector = location.pathname.includes('directors');
   const isActor = location.pathname.includes('actors');
+  // Определяем, режим редактирования или создания
   const isEdit = !!id;
-
+  //Строковый идентификатор типа сущности
   const type = isDirector ? 'director' : 'actor';
+  //хранит слова в родительном падеже в зависимости от типа
   const typeName = isDirector ? 'режиссёра' : 'актёра';
+  //Хранит часть пути в зависимости от ссылки
   const apiUrl = isDirector ? 'directors' : 'actors';
-
+  //Храним данные актёра
   const [form, setForm] = useState<Form>({
     first_name: '',
     second_name: '',
@@ -33,18 +34,18 @@ export default function AdminPersonNew() {
     country: '',
     photo: '',
   });
-
+  //Переменные, нужные для загрузки, сохранения и результата
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Если редактируем — загружаем данные
+  // Если редактируем
   useEffect(() => {
     if (!isEdit || !id) return;
 
     const url = isDirector ? `/movies/directors/${id}` : `/movies/actors/${id}`;
-
+    //Подгружаем данные
     api
       .get(url)
       .then((res) => {
@@ -61,24 +62,24 @@ export default function AdminPersonNew() {
       .catch(() => setError('Не удалось загрузить данные'))
       .finally(() => setLoading(false));
   }, [id, isEdit, isDirector]);
-
+  //Универсальное обновление полей формы
   const handleChange = (field: keyof Form, value: string) => {
     setForm({ ...form, [field]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    //отключаем перезагрузку страницы при отправке
     setError('');
     setSuccess('');
-
+    //Проверяем заполнение обязательных полей
     if (!form.first_name.trim()) {
       setError('Введите имя');
       return;
     }
-
+    //Функция сохранения
     setSaving(true);
     try {
-      // Формируем данные под схему бэкенда
       const payload: any = isDirector
         ? {
             first_name: form.first_name.trim(),
@@ -96,12 +97,13 @@ export default function AdminPersonNew() {
             actor_country: form.country.trim() || null,
             actor_photo: form.photo.trim() || null,
           };
-
+      //Если есть айдишник сохраняем изменения, перенаправляем на страницу назад
       if (isEdit && id) {
         await api.put(`/admin/${apiUrl}/${id}`, payload);
         setSuccess('Изменения сохранены');
         setTimeout(() => navigate(-1), 800);
       } else {
+        //Если нет айдишника, сохраняем и очищаем форму
         const res = await api.post(`/admin/${apiUrl}`, payload);
         setSuccess(`Создан ${typeName} #${res.data.id_actor || res.data.id_director}`);
         setForm({
@@ -124,7 +126,7 @@ export default function AdminPersonNew() {
       setSaving(false);
     }
   };
-
+  //Если идёт загрузка, показываем окно заглушки
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -135,9 +137,11 @@ export default function AdminPersonNew() {
 
   return (
     <div
+      //Фон
       className="min-h-screen flex items-center justify-center bg-cover bg-center p-6"
       style={{ backgroundImage: 'url(https://cs10.pikabu.ru/post_img/big/2020/01/27/1/158007679712145663.jpg)' }}
     >
+      {/* Кнопка Назад */}
       <div className="bg-slate-500 p-8 rounded-2xl shadow-2xl w-full max-w-4xl">
         <button
           onClick={() => navigate(-1)}
@@ -145,11 +149,11 @@ export default function AdminPersonNew() {
         >
           ← Назад
         </button>
-
+        {/* Заголовок */}
         <h1 className="text-3xl font-bold mb-6 text-center text-white">
           {isEdit ? 'Изменить' : 'Добавить'} {typeName}
         </h1>
-
+        {/* Виджет ошибки или успеха */}
         {error && (
           <div className="bg-red-500 text-white p-2 rounded mb-3 text-center text-sm">
             {error}
@@ -160,7 +164,7 @@ export default function AdminPersonNew() {
             {success}
           </div>
         )}
-
+        {/* Формируем 3 колонки */}
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Фото */}
           <div className="bg-slate-600/50 border-2 border-gray-200 rounded-lg p-4 space-y-3">
@@ -178,7 +182,7 @@ export default function AdminPersonNew() {
                 Нет фото
               </div>
             )}
-
+            {/* Строка ввода ссылки */}
             <input
               type="text"
               placeholder="Ссылка на фото"
@@ -252,7 +256,7 @@ export default function AdminPersonNew() {
                 className="w-full p-3 border-2 border-gray-200 text-white rounded-lg bg-transparent focus:outline-none focus:border-indigo-700"
               />
             </div>
-
+            {/* Кнопка Сохранения */}
             <button
               type="submit"
               disabled={saving}
